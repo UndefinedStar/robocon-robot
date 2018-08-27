@@ -1,0 +1,183 @@
+#ifndef _RUN_H
+#define _RUN_H
+
+#include "rundriver.h"
+#include "MyMath.h"
+#include "pid.h"
+#include "includes.h"
+#include "math.h"
+
+//定义行走方式
+#define runpoint      		((unsigned char)1)
+#define runbezier	  			((unsigned char)2)
+#define runcamera  		  	((unsigned char)3)
+
+//小车位置
+#define PositionZero  0
+#define PositionOne   1
+#define PositionTwo   2
+#define PositionThree 3
+#define PositionFour  4
+#define PositionFive  5 
+#define PositionSix   6
+
+
+//数组Flag定义
+//以下标志位为底盘跑动标志位，置1有效
+/****************************************************/
+#define SpeedUp                0
+#define SpeedDown              1
+#define SpeedDownVar           2
+#define Turn                   3
+#define TurnVar                4
+#define SpeedChange            5
+#define FanSpeedChangeByDT50   6
+#define NoLineK                7
+#define RunContinue            8
+#define KeepRun                9
+#define AutoRun               10
+#define LockPointOn           11
+#define LockAngle             12
+#define LockY                 13
+/***************************************************/
+//以下标志位其他标志位
+/***************************************************/
+#define SearchLineLockY       14
+#define CameraDistanceValeue  15
+#define LostDT50Distance      16
+#define LostPicture           17
+#define LcdPage               18
+#define SetFanSpeedZero       19
+#define StartDt50Work         20
+#define SpeedUpVar            21
+#define FanStop               22
+#define HeartHandSearchZero   23
+#define GetFanSucess          24
+#define ClimbSpeedDown        26
+#define LcdPageOld            27
+#define SearchLineError       28
+#define DT50Error             29   
+#define SunSwitchError        30 
+#define ClimbStop             31
+#define ComputerError         32
+#define SearchLineSpeedDown   33
+#define MotorCircleLimit      34
+#define StartLockY            35
+#define HeightChangeByCar     36
+#define HandleSwitch          37
+#define InPoleSpeedDown       38
+/***************************************************/
+
+//Flagu16定义
+/***************************************************/
+#define OverTime              0
+#define PutFanTime            1
+#define RiverTime             2
+#define PositionTime          3
+#define ClimbTime             4
+#define ClimbSpeedDownTime    5
+#define ConnectTime           6
+#define HandTime              7
+#define MotorPutFanSpeedBlue  8
+/***************************************************/
+
+
+
+//事件标志组Flag定义
+/***************************************************/
+#define PutFanFinish          0x0001
+#define SetHeartFinish        0x0002
+/***************************************************/
+
+
+
+
+
+
+extern volatile float CurrentV;
+extern volatile float Vmax;
+
+extern unsigned char ManualRunType;
+extern unsigned char AutoRunType;
+
+/**********************************************/
+extern float UpDis;
+extern float DownDis;
+extern float GoalDis;
+
+extern float XStart;
+extern float YStart;
+extern float AngleStart;
+
+extern float StartTurnDis;
+extern float FullTurnDis;
+
+extern float XStartTurn;
+extern float YStartTurn;
+
+extern float XGoal;
+extern float YGoal;
+extern float AngleGoal;
+
+//初始速度与最大速度
+extern float VWant;
+extern float VStart;
+extern float VStop;
+//开始刹车时的速度
+extern float VStartBrake;
+
+extern float UpAngle;
+extern float DownAngle;
+
+
+extern unsigned char PidLineType;
+extern float LineK;     //直线斜率
+extern float LineB;     //直线截距
+extern float LineKCos;  //直线倾角余弦值
+
+
+//Bezier独有
+extern BEZIER GlobalBezier;
+
+
+extern float DeltaT;
+
+extern float UpT;		//加速到的t值
+extern float DownT;	//开始减速时的t值
+extern float StartTurnT;//开始旋转时的t值
+extern float FullTurnT;//旋转所需的t值
+
+extern float BazierStartSpeed;
+
+extern POSI Vec_Line;		//当前Bezier上的向量
+extern POSI Vec_Error; 	//偏差向量
+
+extern u8 LittleCarPosition;
+
+extern volatile u8 Flag[40];
+extern volatile u16 Flagu16[10];
+extern float CarSpeed;
+extern float PositionCarOriginal;
+/**********************************************/
+float CountDistance(float x_from, float y_from, float x_to, float y_to);
+void CountBezierXYbyT(BEZIER *BezierLine,POINTONBEZIER *BezierPoint);
+void CountBezierControlPoint(BEZIER *BezierLine);
+void CountBezierFunction(BEZIER *BezierLine);
+void RunPoint(unsigned char upflag,u8 downflag,unsigned char turnflag,unsigned char conflag,float Vwant,float Vstart,float Vstop,float Anglestart,float Xwant,float Ywant,float Anglewant,float updis,float downdis,float startturndis,float fullturndis);
+void RunBezier(unsigned char upflag,unsigned char downflag,unsigned char turnflag,unsigned char conflag,float Vwant,float Vstart,float Vstop,float Anglewant,float upt,float downt,float startturnt,float fullturnt,unsigned char pid_class);
+void RunPointSpeedUp(void);
+void RunPointSpeedDown(void);
+void TurnAngle(void);
+void SetPointCurrentVBase(void);
+void RunBezierSpeedUp(void);
+void RunBezierSpeedDown(void);
+void Bezier_TurnAngle(void);
+void SetCurrentPBase(void);
+float CountTwoVector(POSI *vector1,POSI *vector2);
+float CountDistance(float x_from, float y_from, float x_to, float y_to);
+void SetBezier(float p0x,float p0y,float p3x,float p3y,float startangle,float endangle,float leng1,float leng2);
+void RunCamera(void);
+void SpeedChangeByCamera(float CurrentVOld1,float CurrentVOld2);
+float GetLittleCarPosition(float distance);
+#endif
+

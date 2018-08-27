@@ -1,0 +1,150 @@
+#ifndef _CAN2_H
+#define _CAN2_H
+
+#include "stm32f4xx.h"
+#include "MyDataProcess.h"
+#include "includes.h"
+#include "can1.h"
+#include "pid.h"
+#include "delay.h"
+#include "lcd.h"
+#include "tim.h"
+
+#define MotorHeartHand       0x180
+#define MotorFanHight        0x190
+#define MotorFanCircle       0x1A0
+#define MotorSetHeart        0x1B0
+
+#define StteringEngineRed   0x142
+#define StteringEngineBlue  0x143
+
+#define StteringEngineRedUp    1900
+#define StteringEngineRedDown  950
+#define StteringEngineBlueUp   1040
+#define StteringEngineBlueDown 2030
+
+#define ModeEmpty            1
+#define ModeCurrency         2
+#define ModeSpeed            3
+#define ModePosition         4
+#define ModePWM              5
+
+#define SetSpeedP   0x60
+#define ReadSpeedP  0x61
+#define SetSpeedI   0x62
+#define ReadSpeedI  0x63
+#define SetSpeedD   0x64
+#define ReadSpeedD  0x65
+
+//气缸
+#define CylinderSetHeart       0x04
+#define CylinderHand           0x08
+#define CylinderClimbTwoMotor  0x20
+#define CylinderClimbOneMotor  0x10
+#define Cylinderbuffer         0x40
+
+
+#define CylinderSetHeartOpen       0x00
+#define CylinderSetHeartClose      0x04
+#define CylinderHandOpen           0x08
+#define CylinderHandClose          0x00
+#define CylinderbufferOpen         0x40
+#define CylinderbufferClose        0x00
+#define CylinderClimbTwoClose      0x20
+#define CylinderClimbTwoOpen       0x00
+#define CylinderClimbOneClose      0x00
+#define CylinderClimbOneOpen       0x10
+
+#define RunMotor    'F'
+#define ClimbMotor  'O'
+
+#define Can_delay ((u16)(0x0128))
+
+#define TypeMotorZero            1
+#define TypeMotorMode            2 
+#define TypeMotorPWM             3
+#define TypeFan                  4
+#define TypeMotorSetPWM          5
+#define TypeMotorSetPosition     6
+#define TypeStteringEngineLeft   7 
+#define TypeStteringEngineRight  8
+#define TypeCylinder             9
+#define TypeChangeMotor          10
+
+#define Fan_Hight  0
+#define Fan_Circle 1
+#define Set_Heart  2
+#define Heart_Hand 3
+#define Elmo_One   4
+#define Elmo_Two   5
+#define Elmo_Three 6
+#define Elmo_Four  7
+
+extern Can_Information CanHaveSend[16];
+extern Can_Information_NoSend *NoSendCan[16];
+
+
+
+extern Can_queue QUEUE_CAN;       //CAN2底层发送报文队列
+extern Can_queue QUEUE_CAN1;
+
+
+void AskForCylinderState(void); 
+void Can2_Configuration(void);
+void MotorPosition(u16 ID,s16 speed,float position);
+void MotorSpeed(u16 ID,s16 speed);
+void MotorSearchZero(u16 ID,s16 speed);
+void MotorStop(u16 ID);
+void MotorChangeMode(u16 ID,u8 mode);
+void Cylinder(u8 state,u8 action,char a);
+void StartFan(float speed);
+void StartStteringEngine(u16 ID,float pulse);
+void AskForMotorPosition(u16 ID);
+void AskForMotorSpeed(u16 ID);
+void AskForMotorCurrent(u16 ID);
+void ChangeMotorPWMLimit(u16 ID,u16 pwm);
+void MotorDeletePosition(u16 ID,s32 pulse);
+void Can2_VS4Channal_Send(int16_t n_dataCH1, int16_t n_dataCH2, int16_t n_dataCH3, int16_t n_dataCH4);
+void DT50_VS4Channal_Send(int16_t n_dataCH1, int16_t n_dataCH2, int16_t n_dataCH3, int16_t n_dataCH4);
+void ReturnSearchZero(u16 ID);
+void MotorPWM(u16 ID,s16 pwm);
+u8 GetFromId(u16 id);
+void SelfCheckCan2(void);
+void SelfResetCan2(void);
+
+static void Send_CanCmd(void);
+
+int Can_PutToQueue(Can_Information *temp_message);
+void Variate_init(void);
+void TIM7_init(void);
+int can_delay(void);
+void Send_Can(Can_Information *pCan_Information,CAN_TypeDef* CANx);
+
+extern u32 n;
+
+extern u8 CylinderState;
+extern u8 MagneticSwitchState;
+extern float CameraDistance;
+extern float CameraDistanceValue;
+extern float CameraDistanceOld[3];
+extern float CameraDistance0,CameraDistance1,CameraDistance2;
+
+
+extern volatile MOTORS32 MotorRealPosition;
+extern volatile MOTORS16 MotorRealSpeed;
+extern volatile MOTORS32 MotorRealPositionOld;
+extern volatile MOTORS32 MotorError;
+
+extern float MotorRealCurrent[8];
+extern u8 MotorOverCurrentTime[8];
+extern const float MotorCurrentLimit[8];
+extern float Dt50ScanDistance;
+
+#if Switch_CanReturn
+extern Can_Information CanHaveSend[16];
+extern Can_Information_NoSend *NoSendCan[16];
+extern Can_Information_NoSend *c;
+#endif
+
+#endif
+

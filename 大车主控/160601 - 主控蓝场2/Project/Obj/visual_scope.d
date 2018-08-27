@@ -1,0 +1,67 @@
+.\obj\visual_scope.o: ..\GeneralFunction\src\visual_scope.c
+.\obj\visual_scope.o: ..\GeneralFunction\inc\visual_scope.h
+.\obj\visual_scope.o: ..\Libraries\CMSIS\stm32f4xx.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\stdint.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmFunc.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4_simd.h
+.\obj\visual_scope.o: ..\Libraries\CMSIS\system_stm32f4xx.h
+.\obj\visual_scope.o: ..\User\inc\stm32f4xx_conf.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h
+.\obj\visual_scope.o: ..\Libraries\CMSIS\stm32f4xx.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dma.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_exti.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_gpio.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_i2c.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_rcc.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_sdio.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_spi.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_syscfg.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_tim.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
+.\obj\visual_scope.o: ..\User\inc\usart1.h
+.\obj\visual_scope.o: ..\User\inc\queue.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\string.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\stdarg.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\stdio.h
+.\obj\visual_scope.o: ..\User\inc\led.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\stdlib.h
+.\obj\visual_scope.o: ..\uCOSII\CONFIG\includes.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\ctype.h
+.\obj\visual_scope.o: ..\uCOSII\CORE\ucos_ii.h
+.\obj\visual_scope.o: ..\uCOSII\CONFIG\os_cfg.h
+.\obj\visual_scope.o: ..\uCOSII\PORT\os_cpu.h
+.\obj\visual_scope.o: ..\User\inc\flash.h
+.\obj\visual_scope.o: ..\User\inc\usart1.h
+.\obj\visual_scope.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_flash.h
+.\obj\visual_scope.o: ..\User\inc\lcd.h
+.\obj\visual_scope.o: ..\User\inc\ili9320_api.h
+.\obj\visual_scope.o: ..\User\inc\ili9320.h
+.\obj\visual_scope.o: ..\User\inc\can1.h
+.\obj\visual_scope.o: ..\User\inc\run.h
+.\obj\visual_scope.o: ..\User\inc\rundriver.h
+.\obj\visual_scope.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\math.h
+.\obj\visual_scope.o: ..\User\inc\pwm.h
+.\obj\visual_scope.o: ..\GeneralFunction\inc\visual_scope.h
+.\obj\visual_scope.o: ..\GeneralFunction\inc\MyMath.h
+.\obj\visual_scope.o: ..\User\inc\filter.h
+.\obj\visual_scope.o: ..\User\inc\pid.h
+.\obj\visual_scope.o: ..\User\inc\run.h
+.\obj\visual_scope.o: ..\User\inc\can1.h
+.\obj\visual_scope.o: ..\User\inc\can2.h
+.\obj\visual_scope.o: ..\GeneralFunction\inc\MyDataProcess.h
+.\obj\visual_scope.o: ..\User\inc\pid.h
+.\obj\visual_scope.o: ..\User\inc\delay.h
+.\obj\visual_scope.o: ..\User\inc\lcd.h
+.\obj\visual_scope.o: ..\User\inc\tim.h
+.\obj\visual_scope.o: ..\User\inc\can2.h
+.\obj\visual_scope.o: ..\User\inc\led8.h
+.\obj\visual_scope.o: ..\User\inc\beep.h
+.\obj\visual_scope.o: ..\User\inc\key.h
+.\obj\visual_scope.o: ..\User\inc\Usart2.h
+.\obj\visual_scope.o: ..\User\inc\motor.h
+.\obj\visual_scope.o: ..\User\inc\Usart4.h

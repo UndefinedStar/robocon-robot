@@ -1,0 +1,26 @@
+.\obj\ili9320_api.o: ..\User\src\ili9320_api.c
+.\obj\ili9320_api.o: ..\Libraries\CMSIS\stm32f4xx.h
+.\obj\ili9320_api.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4.h
+.\obj\ili9320_api.o: D:\Keil MDK5.01\ARM\ARMCC\bin\..\include\stdint.h
+.\obj\ili9320_api.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmInstr.h
+.\obj\ili9320_api.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cmFunc.h
+.\obj\ili9320_api.o: D:\Keil MDK5.01\ARM\PACK\ARM\CMSIS\3.20.4\CMSIS\Include\core_cm4_simd.h
+.\obj\ili9320_api.o: ..\Libraries\CMSIS\system_stm32f4xx.h
+.\obj\ili9320_api.o: ..\User\inc\stm32f4xx_conf.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h
+.\obj\ili9320_api.o: ..\Libraries\CMSIS\stm32f4xx.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dma.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_exti.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_gpio.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_i2c.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_rcc.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_sdio.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_spi.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_syscfg.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_tim.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
+.\obj\ili9320_api.o: ..\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
+.\obj\ili9320_api.o: ..\User\inc\ili9320.h
+.\obj\ili9320_api.o: ..\User\inc\ili9320_api.h

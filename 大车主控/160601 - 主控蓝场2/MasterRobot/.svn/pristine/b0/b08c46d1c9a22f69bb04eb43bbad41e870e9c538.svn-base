@@ -1,0 +1,605 @@
+#include "lcd.h"
+
+s16 CarBehindPoint=0,PathPoint=0,AnglePoint=0,LineY=0,BazierAngle1=0,BazierLength1=0,BazierLength2=0;
+u8  RiverTimeLimit=240;
+u8  RiverTimeDown=180;
+u16  PutFanLimit=350;
+u8  FanSpeedFour=21;
+u16  ClimbTimeLimit=300;
+u8  ClimbDownLimit=120;
+s8  Switch_ClimbDown=1;
+s8  Switch_DT50=1;
+s8  Switch_Computer=1;
+s8  LineCameraCorrent=0;
+
+char str_x[32];
+char str_y[32];
+char str_angle[32];
+char str_Vx[32];
+char str_Vy[32];
+char str_Vangle[32];
+char str_can[32];
+char str_CurrentV[32];
+char str_Camera[32];
+char str_LockX[32];
+char str_LockY[32];
+char str_LockA[32];
+char str_Number[32];
+char str_Key[32];
+
+int Adjust[10];
+
+void LCDAdjust(void)
+{
+	RowLow;
+	OSTimeDly(100);
+	if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) || !GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+	{
+		OSTimeDly(100);
+		if(GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) && GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) && GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) && GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+			return;
+		BeepOn;
+		if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7))
+			Adjust[Coulum]=4;
+		else if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8))
+			Adjust[Coulum]=2;
+		else if(!GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6))
+			Adjust[Coulum]=3;
+		else if(!GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+			Adjust[Coulum]=1;
+		RowHigh;
+		GPIO_ResetBits(GPIOG,GPIO_Pin_5);
+		OSTimeDly(100);
+		if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) || !GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+			Adjust[Row]=2;
+		else
+		{
+				GPIO_ResetBits(GPIOG,GPIO_Pin_6);
+				OSTimeDly(100);
+				if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) || !GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+					Adjust[Row]=0;
+				else
+				{
+						GPIO_ResetBits(GPIOD,GPIO_Pin_12);
+						OSTimeDly(100);
+						if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) || !GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+							Adjust[Row]=1;
+						else
+						{
+								GPIO_ResetBits(GPIOD,GPIO_Pin_13);
+								OSTimeDly(100);
+								if(!GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_7) || !GPIO_ReadInputDataBit(GPIOG, GPIO_Pin_8) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_6) || !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_7))
+									Adjust[Row]=3;
+						}
+			  }
+	  }
+		if(Adjust[AdjustKey]==Adjust[Row]*4+Adjust[Coulum])
+			return;
+		Adjust[AdjustKey]=Adjust[Row]*4+Adjust[Coulum];
+	}
+	else
+	{
+		Adjust[AdjustKey]=0;
+		BeepOff;
+	}
+	if(Adjust[AdjustKey]==6)
+	{
+		Adjust[Save]=1;
+		#if (PlacePart==BluePart)
+		Flash_Write_all(0);
+		#else
+		Flash_Write_all(3);
+		#endif
+		OSSemPost(RunStart);
+	}		
+	
+	if(Adjust[AdjustKey]==7)
+		Adjust[Calculate]=1;
+	else if(Adjust[AdjustKey]==5)
+		Adjust[Calculate]=-1;
+	else
+		Adjust[Calculate]=0;
+	
+	if(Adjust[AdjustKey]==10)
+		Adjust[PageCoulum]++;
+	else if(Adjust[AdjustKey]==2)
+		Adjust[PageCoulum]--;
+	if(Adjust[PageCoulum]>8)
+		Adjust[PageCoulum]=0;
+	else if(Adjust[PageCoulum]<0)
+		Adjust[PageCoulum]=8;
+	
+	if(Adjust[AdjustKey]==4)
+		Adjust[Page]--;
+	else if(Adjust[AdjustKey]==8)
+	  Adjust[Page]++;
+	if(Adjust[Page]>PageLimit)
+		Adjust[Page]=0;
+	else if(Adjust[Page]<0)
+		Adjust[Page]=PageLimit;
+	if(Adjust[PageOld]!=Adjust[Page])
+	{
+		ili9320_Clear(Green);
+		Adjust[PageCoulum]=0;
+		Adjust[PageOld]=Adjust[Page];
+		return;
+	}
+	
+	if(Adjust[Page]==0)
+	{
+			GUI_Text_16x24(5, 0, (u8*)"CarBehindPoint:",15,Blue, Green);
+		  GUI_Text_16x24(5, 30, (u8*)"PathPoint:",10,Blue, Green);
+	  	GUI_Text_16x24(5, 60, (u8*)"AnglePoint:",11,Blue, Green);
+		  GUI_Text_16x24(5, 90, (u8*)"LineY:",6,Blue, Green);
+		  GUI_Text_16x24(5, 120, (u8*)"BazierLength2:",14,Blue, Green);
+		
+			sprintf(str_x,"%3d",(int)CarBehindPoint);
+			sprintf(str_y,"%3d",(int)PathPoint);
+			sprintf(str_angle,"%3d",(int)AnglePoint);
+			sprintf(str_Vx,"%3d",(int)LineY);
+		  sprintf(str_Vy,"%3d",(int)BazierLength2);
+		
+	  	GUI_Text_16x24(260, 0, (u8*)str_x ,4,0x0000, Green);
+			GUI_Text_16x24(260, 30, (u8*)str_y ,4,0x0000, Green);
+			GUI_Text_16x24(260, 60, (u8*)str_angle,4,0x0000, Green);
+			GUI_Text_16x24(260, 90, (u8*)str_Vx,4,0x0000, Green);
+		  GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Green);
+			
+			switch (Adjust[PageCoulum])
+			{
+				case 1:CarBehindPoint+=3*Adjust[Calculate];
+					     sprintf(str_x,"%3d",(int)CarBehindPoint);
+					     GUI_Text_16x24(260, 0, (u8*)str_x ,4,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 0, (u8*)"CarBehindPoint:",15,Blue, Yellow);break;
+				case 2:PathPoint+=3*Adjust[Calculate];
+					     sprintf(str_y,"%3d",(int)PathPoint);
+				       GUI_Text_16x24(260, 30, (u8*)str_y ,4,0x0000, Yellow);
+							 GUI_Text_16x24(5, 30, (u8*)"PathPoint:",10,Blue, Yellow);break;
+				case 3:AnglePoint+=3*Adjust[Calculate];
+				       sprintf(str_angle,"%3d",(int)AnglePoint);
+					     GUI_Text_16x24(260, 60, (u8*)str_angle,4,0x0000, Yellow); 
+							 GUI_Text_16x24(5, 60, (u8*)"AnglePoint:",11,Blue, Yellow);break;
+				case 4:LineY+=3*Adjust[Calculate];
+				     	 sprintf(str_Vx,"%3d",(int)LineY);
+				       GUI_Text_16x24(260, 90, (u8*)str_Vx,4,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 90, (u8*)"LineY:",6,Blue, Yellow);break;
+				case 5:BazierLength2+=5*Adjust[Calculate];
+				     	 sprintf(str_Vy,"%3d",(int)BazierLength2);
+				       GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 120, (u8*)"BazierLength2:",14,Blue, Yellow);break;
+				default:break;
+			}
+	}
+	else if(Adjust[Page]==1)
+	{
+			GUI_Text_16x24(5, 0, (u8*)"RiverTimeLimit:",15,Blue, Green);
+		  GUI_Text_16x24(5, 30, (u8*)"PutFanLimit:",12,Blue, Green);
+	  	GUI_Text_16x24(5, 60, (u8*)"RiverTimeDown:",14,Blue, Green);
+		  GUI_Text_16x24(5, 90, (u8*)"FanSpeedFour:",13,Blue, Green);
+  		GUI_Text_16x24(5, 120, (u8*)"ClimbTimeLimit:",15,Blue, Green);
+	  	GUI_Text_16x24(5, 150, (u8*)"ClimbDownLimit:",15,Blue, Green);
+		  GUI_Text_16x24(5, 180, (u8*)"BazierAngle1:",13,Blue, Green);
+		  GUI_Text_16x24(5, 210, (u8*)"BazierLength1:",14,Blue, Green);
+		
+			sprintf(str_x,"%3d",(int)RiverTimeLimit);
+			sprintf(str_y,"%3d",(int)PutFanLimit);
+			sprintf(str_angle,"%3d",(int)RiverTimeDown);
+			sprintf(str_Vx,"%3d",(int)FanSpeedFour);
+			sprintf(str_Vy,"%3d",(int)ClimbTimeLimit);
+			sprintf(str_Vangle,"%3d",(int)ClimbDownLimit);
+		  sprintf(str_CurrentV,"%3d",(int)BazierAngle1);
+		  sprintf(str_Camera,"%3d",(int)BazierLength1);
+		
+	  	GUI_Text_16x24(260, 0, (u8*)str_x ,4,0x0000, Green);
+			GUI_Text_16x24(260, 30, (u8*)str_y ,4,0x0000, Green);
+			GUI_Text_16x24(260, 60, (u8*)str_angle,4,0x0000, Green);
+			GUI_Text_16x24(260, 90, (u8*)str_Vx,4,0x0000, Green);
+			GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Green);
+			GUI_Text_16x24(260, 150, (u8*)str_Vangle,3,0x0000, Green);
+			GUI_Text_16x24(260, 180, (u8*)str_CurrentV,3,0x0000, Green);
+			GUI_Text_16x24(260, 210, (u8*)str_Camera,3,0x0000, Green);
+			
+			switch (Adjust[PageCoulum])
+			{
+				case 1:RiverTimeLimit+=5*Adjust[Calculate];
+					     sprintf(str_x,"%3d",(int)RiverTimeLimit);
+					     GUI_Text_16x24(260, 0, (u8*)str_x ,4,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 0, (u8*)"RiverTimeLimit:",15,Blue, Yellow);break;
+				case 2:PutFanLimit+=5*Adjust[Calculate];
+					     sprintf(str_y,"%3d",(int)PutFanLimit);
+				       GUI_Text_16x24(260, 30, (u8*)str_y ,4,0x0000, Yellow);
+							 GUI_Text_16x24(5, 30, (u8*)"PutFanLimit:",11,Blue, Yellow);break;
+				case 3:RiverTimeDown+=5*Adjust[Calculate];
+				       sprintf(str_angle,"%3d",(int)RiverTimeDown);
+					     GUI_Text_16x24(260, 60, (u8*)str_angle,4,0x0000, Yellow); 
+							 GUI_Text_16x24(5, 60, (u8*)"RiverTimeDown:",14,Blue, Yellow);break;
+				case 4:FanSpeedFour+=Adjust[Calculate];
+				     	 sprintf(str_Vx,"%3d",(int)FanSpeedFour);
+				       GUI_Text_16x24(260, 90, (u8*)str_Vx,4,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 90, (u8*)"FanSpeedFour:",13,Blue, Yellow);break;
+				case 5:ClimbTimeLimit+=5*Adjust[Calculate];
+				     	 sprintf(str_Vx,"%3d",(int)ClimbTimeLimit);
+				       GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 120, (u8*)"ClimbTimeLimit:",15,Blue, Yellow);break;
+				case 6:ClimbDownLimit+=5*Adjust[Calculate];
+				     	 sprintf(str_Vx,"%3d",(int)ClimbDownLimit);
+				       GUI_Text_16x24(260, 150, (u8*)str_Vangle,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 150, (u8*)"ClimbDownLimit:",15,Blue, Yellow);break;
+				case 7:BazierAngle1+=5*Adjust[Calculate];
+				     	 sprintf(str_CurrentV,"%3d",(int)BazierAngle1);
+				       GUI_Text_16x24(260, 180, (u8*)str_CurrentV,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 180, (u8*)"BazierAngle1:",13,Blue, Yellow);break;
+			  case 8:BazierLength1+=5*Adjust[Calculate];
+				     	 sprintf(str_Camera,"%3d",(int)BazierLength1);
+				       GUI_Text_16x24(260, 210, (u8*)str_Camera,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 210, (u8*)"BazierLength1:",14,Blue, Yellow);break;
+				default:break;
+			}
+	}
+	else if(Adjust[Page]==2)
+	{
+			GUI_Text_16x24(5, 0, (u8*)"Switch_ClimbDown:",17,Blue, Green);
+		  GUI_Text_16x24(5, 30, (u8*)"Switch_DT50:",12,Blue, Green);
+	  	GUI_Text_16x24(5, 60, (u8*)"Switch_Computer:",16,Blue, Green);
+		  GUI_Text_16x24(5, 90, (u8*)"LineCameraCorrent:",18,Blue, Green);
+  		GUI_Text_16x24(5, 120, (u8*)"HandTime:",9,Blue, Green);
+	  	GUI_Text_16x24(5, 150, (u8*)"PutFanSpeedBlue:",16,Blue, Green);
+//		  GUI_Text_16x24(5, 180, (u8*)"BazierAngle1:",13,Blue, Green);
+//		  GUI_Text_16x24(5, 210, (u8*)"BazierLength1:",14,Blue, Green);
+		
+			sprintf(str_x,"%d",(int)Switch_ClimbDown);
+			sprintf(str_y,"%d",(int)Switch_DT50);
+			sprintf(str_angle,"%d",(int)Switch_Computer);
+			sprintf(str_Vx,"%2d",(int)LineCameraCorrent);
+			sprintf(str_Vy,"%3d",(int)Flagu16[HandTime]);
+			sprintf(str_Vangle,"%4d",(int)Flagu16[MotorPutFanSpeedBlue]);
+//		  sprintf(str_CurrentV,"%3d",(int)BazierAngle1);
+//		  sprintf(str_Camera,"%3d",(int)BazierLength1);
+		
+	  	GUI_Text_16x24(280, 0, (u8*)str_x ,1,0x0000, Green);
+			GUI_Text_16x24(280, 30, (u8*)str_y ,1,0x0000, Green);
+			GUI_Text_16x24(280, 60, (u8*)str_angle,1,0x0000, Green);
+			GUI_Text_16x24(290, 90, (u8*)str_Vx,2,0x0000, Green);
+			GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Green);
+			GUI_Text_16x24(260, 150, (u8*)str_Vangle,4,0x0000, Green);
+//			GUI_Text_16x24(260, 180, (u8*)str_CurrentV,3,0x0000, Green);
+//			GUI_Text_16x24(260, 210, (u8*)str_Camera,3,0x0000, Green);
+			
+			switch (Adjust[PageCoulum])
+			{
+				case 1:Switch_ClimbDown+=Adjust[Calculate];
+							 if(Switch_ClimbDown>1)
+								 Switch_ClimbDown=0;
+							 else if(Switch_ClimbDown<0)
+								 Switch_ClimbDown=1;
+					     sprintf(str_x,"%d",(int)Switch_ClimbDown);
+					     GUI_Text_16x24(280, 0, (u8*)str_x ,1,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 0, (u8*)"Switch_ClimbDown:",17,Blue, Yellow);break;
+				case 2:Switch_DT50+=Adjust[Calculate];
+							  if(Switch_DT50>1)
+								 Switch_DT50=0;
+							 else if(Switch_DT50<0)
+								 Switch_DT50=1;
+					     sprintf(str_y,"%d",(int)Switch_DT50);
+				       GUI_Text_16x24(280, 30, (u8*)str_y ,1,0x0000, Yellow);
+							 GUI_Text_16x24(5, 30, (u8*)"Switch_DT50:",11,Blue, Yellow);break;
+				case 3:Switch_Computer+=Adjust[Calculate];
+							  if(Switch_Computer>1)
+								 Switch_Computer=0;
+							 else if(Switch_Computer<0)
+								 Switch_Computer=1;
+				       sprintf(str_angle,"%d",(int)Switch_Computer);
+					     GUI_Text_16x24(280, 60, (u8*)str_angle,1,0x0000, Yellow); 
+							 GUI_Text_16x24(5, 60, (u8*)"Switch_Computer:",16,Blue, Yellow);break;
+				case 4:LineCameraCorrent+=Adjust[Calculate];
+				     	 sprintf(str_Vx,"%2d",(int)LineCameraCorrent);
+				       GUI_Text_16x24(290, 90, (u8*)str_Vx,2,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 90, (u8*)"LineCameraCorrent:",18,Blue, Yellow);break;
+				case 5:Flagu16[HandTime]+=5*Adjust[Calculate];
+				     	 sprintf(str_Vx,"%3d",(int)Flagu16[HandTime]);
+				       GUI_Text_16x24(260, 120, (u8*)str_Vy,3,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 120, (u8*)"HandTime:",9,Blue, Yellow);break;
+				case 6:Flagu16[MotorPutFanSpeedBlue]+=500*Adjust[Calculate];
+				     	 sprintf(str_Vx,"%4d",(int)Flagu16[MotorPutFanSpeedBlue]);
+				       GUI_Text_16x24(260, 150, (u8*)str_Vangle,4,0x0000, Yellow); 
+				       GUI_Text_16x24(5, 150, (u8*)"PutFanSpeedBlue:",15,Blue, Yellow);break;
+//				case 7:BazierAngle1+=5*Adjust[Calculate];
+//				     	 sprintf(str_CurrentV,"%3d",(int)BazierAngle1);
+//				       GUI_Text_16x24(260, 180, (u8*)str_CurrentV,3,0x0000, Yellow); 
+//				       GUI_Text_16x24(5, 180, (u8*)"BazierAngle1:",13,Blue, Yellow);break;
+//			  case 8:BazierLength1+=5*Adjust[Calculate];
+//				     	 sprintf(str_Camera,"%3d",(int)BazierLength1);
+//				       GUI_Text_16x24(260, 210, (u8*)str_Camera,3,0x0000, Yellow); 
+//				       GUI_Text_16x24(5, 210, (u8*)"BazierLength1:",14,Blue, Yellow);break;
+				default:break;
+			}
+	}
+}	
+
+
+
+
+u8 KeyNumber=0;
+u8 ErrorShow=1;
+u32 CAN1Error;
+u32 CAN2Error;
+void LCDShow(void)
+{
+	int i;
+	if(Flag[LcdPage]>3)
+		 Flag[LcdPage]=0;
+	else if(Flag[LcdPage]<0)
+		 Flag[LcdPage]=3;
+	
+	if(Flag[LcdPageOld]!=Flag[LcdPage])
+	{
+		ili9320_Clear(Green);
+		Flag[LcdPageOld]=Flag[LcdPage];
+		return;
+	}
+
+	if(Flag[LcdPage]==0)
+	{
+			for(i=0;i<16;i++)
+					str_can[i]=((Canself>>i)&0x0001)+48;
+				
+			GUI_Text_16x24(5, 0, (u8*)"X:",2,Blue, Green);
+			GUI_Text_16x24(5, 30, (u8*)"Y:",2,Blue, Green);
+			GUI_Text_16x24(5, 60, (u8*)"A:",2,Blue, Green);
+			GUI_Text_16x24(5, 90, (u8*)"ComputerW:",10,Blue, Green);
+			GUI_Text_16x24(5, 150, (u8*)"Switch_Test:",12,Blue, Green);	
+			GUI_Text_16x24(5, 120, (u8*)"ComputerH:",10,Blue, Green);
+//		  GUI_Text_16x24(5, 180, (u8*)"HandPosi:",8,Blue, Green);
+			GUI_Text_16x24(5, 210, (u8*)"C:",2,Blue, Green);
+			GUI_Text_16x24(165, 0, (u8*)"CV:",3,Blue, Green);
+			GUI_Text_16x24(165, 30, (u8*)"CA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 60, (u8*)"LX:",3,Blue, Green);
+//			GUI_Text_16x24(165, 90, (u8*)"LY:",3,Blue, Green);
+//			GUI_Text_16x24(165, 120, (u8*)"LA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 150, (u8*)"NM:",3,Blue, Green);
+			GUI_Text_16x24(165, 60, (u8*)"KY:",3,Blue, Green);
+		
+		  if(PlacePart==BluePart)
+				GUI_Text_16x24(165, 180, (u8*)"BLUE",4,Black, Blue);
+			else
+				GUI_Text_16x24(250, 180, (u8*)"RED:",3,Black, Red);
+
+			sprintf(str_x,"%7.2f",PositionNow.x);
+			sprintf(str_y,"%7.2f",PositionNow.y);
+			sprintf(str_angle,"%7.2f",PositionNow.angle);
+			sprintf(str_Vx,"%7.2f",(float)ErrorCameraWidth);
+			sprintf(str_Vy,"%d",Switch_Test);	
+			sprintf(str_Vangle,"%7.2f",(float)ErrorCameraHeight);
+			sprintf(str_CurrentV,"%7.2f",CurrentV);
+			sprintf(str_Camera,"%7.2f",(float)ErrorCameraLine);
+//			sprintf(str_LockX,"%7.2f",(float)MotorRealPosition.HeartHand/100);
+//			sprintf(str_LockY,"%7.2f",LockPoint.y);
+//			sprintf(str_LockA,"%7.2f",LockPoint.angle);
+//			sprintf(str_Number,"%7.2f",(float)CanGroup);
+			sprintf(str_Key,"%7.2f",(float)KeyNumber);
+			
+			GUI_Text_16x24(45, 0, (u8*)str_x ,7,0x0000, Green);
+			GUI_Text_16x24(45, 30, (u8*)str_y ,7,0x0000, Green);
+			GUI_Text_16x24(45, 60, (u8*)str_angle,7,0x0000, Green);
+			GUI_Text_16x24(160, 90, (u8*)str_Vx,7,0x0000, Green);
+			GUI_Text_16x24(290, 150, (u8*)str_Vy,1,0x0000, Green);
+			GUI_Text_16x24(160, 120, (u8*)str_Vangle,7,0x0000, Green);
+			GUI_Text_16x24(45, 210, (u8*)str_can,16,0x0000, Green);
+			GUI_Text_16x24(210, 0, (u8*)str_CurrentV,7,0x0000, Green);
+			GUI_Text_16x24(210, 30, (u8*)str_Camera,7,0x0000, Green);
+//			GUI_Text_16x24(170, 180, (u8*)str_LockX,7,0x0000, Green);
+//			GUI_Text_16x24(210, 90, (u8*)str_LockY,7,0x0000, Green);
+//			GUI_Text_16x24(210, 120, (u8*)str_LockA,7,0x0000, Green);
+//			GUI_Text_16x24(210, 150, (u8*)str_Number,7,0x0000, Green);
+			GUI_Text_16x24(210, 60, (u8*)str_Key,7,0x0000, Green);
+			
+			
+			
+			if(ErrorShow==1)
+			{
+					if(((CAN2->TSR & CAN_TSR_TME) == 0))
+						GUI_Text_16x24(5, 180,"CAN2FULL",8,Red, Yellow);
+					else if(UsartErrorTme>100 && PositionNow.y>100)
+					{
+						GUI_Text_16x24(5, 180,"USART4Lost",10,Red, Yellow);
+						ErrorShow=0;
+					}
+		//			else if(Flag[DT50Error]>100 && PositionNow.y>200 && PositionNow.y<800)
+		//			{
+		//				GUI_Text_16x24(5, 180,"DT50ERROR",9,Red, Yellow);
+		//				ErrorShow=0;
+		//			}
+					else
+						GUI_Text_16x24(5, 180,"NO ERROR",8,Red, Yellow);
+			}
+	}
+	else if(Flag[LcdPage]==1)
+	{
+			if(CAN2->ESR!=0)
+				CAN2Error=CAN2->ESR;
+			if(CAN1->ESR!=0)
+				CAN1Error=CAN1->ESR;
+		  for(i=0;i<16;i++)
+					str_can[i]=((CanGroup>>i)&0x0001)+48;
+			for(i=7;i>=0;i--)
+		  {
+					str_x[i]=((CAN2Error>>(4*(7-i)))&0x0f)+48;
+				  str_angle[i]=((CAN1Error>>(4*(7-i)))&0x0f)+48;
+				  if(str_x[i]>'9')
+						str_x[i]+=7;
+					 if(str_angle[i]>'9')
+						str_angle[i]+=7;
+			}
+				
+			GUI_Text_16x24(5, 0, (u8*)"CAN2ESR",7,Blue, Green);
+
+//			GUI_Text_16x24(5, 60, (u8*)"A:",2,Blue, Green);
+			GUI_Text_16x24(5, 30, (u8*)"Vx:",3,Blue, Green);
+			GUI_Text_16x24(5, 60, (u8*)"Vy:",3,Blue, Green);	
+			GUI_Text_16x24(5, 90, (u8*)"Vw:",3,Blue, Green);
+      GUI_Text_16x24(5, 150, (u8*)"SunSwitchError",14,Blue, Green);
+			GUI_Text_16x24(5, 180, (u8*)"CAN1ESR",7,Blue, Green);
+			GUI_Text_16x24(5, 210, (u8*)"C:",2,Blue, Green);
+			GUI_Text_16x24(5, 120, (u8*)"HandPosi:",8,Blue, Green);
+//			GUI_Text_16x24(165, 30, (u8*)"CA:",3,Blue, Green);
+			GUI_Text_16x24(165, 30, (u8*)"LX:",3,Blue, Green);
+			GUI_Text_16x24(165, 60, (u8*)"LY:",3,Blue, Green);
+			GUI_Text_16x24(165, 90, (u8*)"LA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 150, (u8*)"NM:",3,Blue, Green);
+//			GUI_Text_16x24(165, 180, (u8*)"KY:",3,Blue, Green);
+
+			
+			sprintf(str_y,"%d",Flag[SunSwitchError]);
+//			sprintf(str_angle,"%7.2f",PositionNow.angle);
+			sprintf(str_Vx,"%7.2f",SpeedWantSet.Vx);
+			sprintf(str_Vy,"%7.2f",SpeedWantSet.Vy);	
+			sprintf(str_Vangle,"%7.2f",(float)SpeedWantSet.Vw*PlacePart);
+			sprintf(str_CurrentV,"%7.2f",(float)MotorRealPosition.HeartHand/100);
+//			sprintf(str_Camera,"%7.2f",(float)ErrorCameraLine);
+			sprintf(str_LockX,"%7.2f",LockPoint.x);
+			sprintf(str_LockY,"%7.2f",LockPoint.y);
+			sprintf(str_LockA,"%7.2f",LockPoint.angle);
+//			sprintf(str_Number,"%7.2f",(float)CanGroup);
+//			sprintf(str_Key,"%7.2f",(float)ErrorCameraWidth);
+			
+			GUI_Text_16x24(130, 0, (u8*)str_x ,8,0x0000, Green);
+			GUI_Text_16x24(50, 30, (u8*)str_Vx,7,0x0000, Green);
+			GUI_Text_16x24(50, 60, (u8*)str_Vy,7,0x0000, Green);
+			GUI_Text_16x24(50, 90, (u8*)str_Vangle,7,0x0000, Green);
+			GUI_Text_16x24(260, 150, (u8*)str_y ,1,0x0000, Green);
+			GUI_Text_16x24(130, 180, (u8*)str_angle,8,0x0000, Green);
+			GUI_Text_16x24(45, 210, (u8*)str_can,16,0x0000, Green);
+			GUI_Text_16x24(170,120, (u8*)str_CurrentV,7,0x0000, Green);
+//			GUI_Text_16x24(210, 30, (u8*)str_Camera,7,0x0000, Green);
+			GUI_Text_16x24(210, 30, (u8*)str_LockX,7,0x0000, Green);
+			GUI_Text_16x24(210, 60, (u8*)str_LockY,7,0x0000, Green);
+			GUI_Text_16x24(210, 90, (u8*)str_LockA,7,0x0000, Green);
+//			GUI_Text_16x24(210, 150, (u8*)str_Number,7,0x0000, Green);
+//			GUI_Text_16x24(210, 180, (u8*)str_Key,7,0x0000, Green);
+	}
+	else if(Flag[LcdPage]==2)
+	{				
+			GUI_Text_16x24(5, 0, (u8*)"ClimbStop",9,Blue, Green);
+			GUI_Text_16x24(5, 30, (u8*)"MotorCircleLimit",16,Blue, Green);
+			GUI_Text_16x24(5, 60, (u8*)"RiverTime:",9,Blue, Green);
+//			GUI_Text_16x24(5, 60, (u8*)"Vy:",3,Blue, Green);	
+			GUI_Text_16x24(5, 90, (u8*)"PutFanTime:",10,Blue, Green);
+		  GUI_Text_16x24(5, 120, (u8*)"ClimbTime:",10,Blue, Green);
+		  GUI_Text_16x24(5, 150, (u8*)"SpeedDownTime:",14,Blue, Green);
+			GUI_Text_16x24(5, 180, (u8*)"ConnectTime:",12,Blue, Green);
+//			GUI_Text_16x24(5, 120, (u8*)"HandPosi:",8,Blue, Green);
+//			GUI_Text_16x24(165, 30, (u8*)"CA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 30, (u8*)"LX:",3,Blue, Green);
+//			GUI_Text_16x24(165, 60, (u8*)"LY:",3,Blue, Green);
+//			GUI_Text_16x24(165, 90, (u8*)"LA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 150, (u8*)"NM:",3,Blue, Green);
+//			GUI_Text_16x24(165, 180, (u8*)"KY:",3,Blue, Green);
+
+			
+			sprintf(str_x,"%d",Flag[ClimbStop]);
+			sprintf(str_angle,"%d",Flag[MotorCircleLimit]);
+			sprintf(str_Vx,"%4d",Flagu16[RiverTime]);
+			sprintf(str_y,"%4d",Flagu16[ClimbTime]);	
+			sprintf(str_Vangle,"%d",Flagu16[PutFanTime]);
+			sprintf(str_angle,"%3d",Flagu16[ClimbSpeedDownTime]);
+			sprintf(str_can,"%3d",Flagu16[ConnectTime]);
+//			sprintf(str_LockX,"%7.2f",LockPoint.x);
+//			sprintf(str_LockY,"%7.2f",LockPoint.y);
+//			sprintf(str_LockA,"%7.2f",LockPoint.angle);
+//			sprintf(str_Number,"%7.2f",(float)CanGroup);
+//			sprintf(str_Key,"%7.2f",(float)ErrorCameraWidth);
+			
+			GUI_Text_16x24(280, 0, (u8*)str_x ,1,0x0000, Green);
+			GUI_Text_16x24(280, 30, (u8*)str_angle,1,0x0000, Green);
+			GUI_Text_16x24(250, 60, (u8*)str_Vx,4,0x0000, Green);
+			GUI_Text_16x24(260, 90, (u8*)str_Vangle,3,0x0000, Green);
+			GUI_Text_16x24(260, 120, (u8*)str_y ,4,0x0000, Green);
+			GUI_Text_16x24(260, 150, (u8*)str_angle,3,0x0000, Green);
+			GUI_Text_16x24(260, 180, (u8*)str_can,3,0x0000, Green);
+//			GUI_Text_16x24(170,120, (u8*)str_CurrentV,7,0x0000, Green);
+//			GUI_Text_16x24(210, 30, (u8*)str_Camera,7,0x0000, Green);
+//			GUI_Text_16x24(210, 30, (u8*)str_LockX,7,0x0000, Green);
+//			GUI_Text_16x24(210, 60, (u8*)str_LockY,7,0x0000, Green);
+//			GUI_Text_16x24(210, 90, (u8*)str_LockA,7,0x0000, Green);
+//			GUI_Text_16x24(210, 150, (u8*)str_Number,7,0x0000, Green);
+//			GUI_Text_16x24(210, 180, (u8*)str_Key,7,0x0000, Green);
+	}
+	else if(Flag[LcdPage]==3)
+	{				
+		  GUI_Text_16x24(5, 0, (u8*)"MotorOneError:",14,Blue, Green);
+		  GUI_Text_16x24(5, 30, (u8*)"MotorTwoError:",14,Blue, Green);
+			GUI_Text_16x24(5, 60, (u8*)"MotorThreeError:",16,Blue, Green);
+//			GUI_Text_16x24(5, 60, (u8*)"Vy:",3,Blue, Green);	
+			GUI_Text_16x24(5, 90, (u8*)"MotorFourError:",15,Blue, Green);
+//		  GUI_Text_16x24(5, 120, (u8*)"ClimbTime:",10,Blue, Green);
+//		  GUI_Text_16x24(5, 150, (u8*)"SpeedDownTime:",14,Blue, Green);
+//			GUI_Text_16x24(5, 180, (u8*)"ConnectTime:",12,Blue, Green);
+//			GUI_Text_16x24(5, 120, (u8*)"HandPosi:",8,Blue, Green);
+//			GUI_Text_16x24(165, 30, (u8*)"CA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 30, (u8*)"LX:",3,Blue, Green);
+//			GUI_Text_16x24(165, 60, (u8*)"LY:",3,Blue, Green);
+//			GUI_Text_16x24(165, 90, (u8*)"LA:",3,Blue, Green);
+//			GUI_Text_16x24(165, 150, (u8*)"NM:",3,Blue, Green);
+//			GUI_Text_16x24(165, 180, (u8*)"KY:",3,Blue, Green);
+
+			
+			sprintf(str_x,"%3d",MotorError.MotorOne);
+			sprintf(str_angle,"%3d",MotorError.MotorTwo);
+			sprintf(str_Vx,"%3d",MotorError.MotorThree);
+			sprintf(str_Vangle,"%3d",MotorError.MotorFour);	
+//			sprintf(str_Vangle,"%d",Flagu16[PutFanTime]);
+//			sprintf(str_angle,"%3d",Flagu16[ClimbSpeedDownTime]);
+//			sprintf(str_can,"%3d",Flagu16[ConnectTime]);
+//			sprintf(str_LockX,"%7.2f",LockPoint.x);
+//			sprintf(str_LockY,"%7.2f",LockPoint.y);
+//			sprintf(str_LockA,"%7.2f",LockPoint.angle);
+//			sprintf(str_Number,"%7.2f",(float)CanGroup);
+//			sprintf(str_Key,"%7.2f",(float)ErrorCameraWidth);
+			
+			GUI_Text_16x24(260, 0, (u8*)str_x ,3,0x0000, Green);
+			GUI_Text_16x24(260, 30, (u8*)str_angle,3,0x0000, Green);
+			GUI_Text_16x24(260, 60, (u8*)str_Vx,3,0x0000, Green);
+			GUI_Text_16x24(260, 90, (u8*)str_Vangle,3,0x0000, Green);
+//			GUI_Text_16x24(260, 120, (u8*)str_y ,4,0x0000, Green);
+//			GUI_Text_16x24(260, 150, (u8*)str_angle,3,0x0000, Green);
+//			GUI_Text_16x24(260, 180, (u8*)str_can,3,0x0000, Green);
+//			GUI_Text_16x24(170,120, (u8*)str_CurrentV,7,0x0000, Green);
+//			GUI_Text_16x24(210, 30, (u8*)str_Camera,7,0x0000, Green);
+//			GUI_Text_16x24(210, 30, (u8*)str_LockX,7,0x0000, Green);
+//			GUI_Text_16x24(210, 60, (u8*)str_LockY,7,0x0000, Green);
+//			GUI_Text_16x24(210, 90, (u8*)str_LockA,7,0x0000, Green);
+//			GUI_Text_16x24(210, 150, (u8*)str_Number,7,0x0000, Green);
+//			GUI_Text_16x24(210, 180, (u8*)str_Key,7,0x0000, Green);
+	}
+	#if Switch_CurrentWarning
+	 for(i=0;i<8,i++)
+	 {
+		 if(MotorRealCurrent[i]>MotorCurrentLimit[i])
+		 {
+			 MotorOverCurrentTime[i]++;
+			 if(MotorOverCurrentTime[i]>=5)
+			 {
+				 MotorOverCurrentTime[i]=5;
+				 BEEP_TOGGLE;
+				 switch (i)
+				 {
+					 case 0:
+						 MotorChangeMode(MotorFanHight,ModeEmpty);break;
+					 case 1:
+						 MotorChangeMode(MotorFanCircle,ModeEmpty);break;
+					 case 2:
+						 MotorChangeMode(MotorSetHeart,ModeEmpty);break;
+					 case 3:
+						 MotorChangeMode(MotorHeartHand,ModeEmpty);break;
+					 default:break;
+				 }
+			 }
+		 }
+		 else
+			 MotorOverCurrentTime[i]=0;
+	 }
+	 
+	#endif
+}
+
+

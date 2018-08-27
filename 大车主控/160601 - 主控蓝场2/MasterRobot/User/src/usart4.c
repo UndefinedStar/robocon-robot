@@ -1,0 +1,190 @@
+#include "usart4.h"
+
+s16 ErrorCameraHeight = 500;
+s16 ErrorCameraWidth = 500;
+s16 ErrorCameraHeight1 = 500;
+s16 ErrorCameraWidth1 = 500;
+
+void USART4_Judge(void);
+
+void USART4_Configuration(void)
+{
+    USART_InitTypeDef USART_InitStructure;
+    GPIO_InitTypeDef  GPIO_InitStructure;
+    NVIC_InitTypeDef  NVIC_InitStructure;
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    USART_InitStructure.USART_BaudRate = 115200;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(UART4, &USART_InitStructure);
+    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);       //接受中断
+
+    //配置NVIC
+    NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    //使能USART
+    USART_Cmd(UART4, ENABLE);
+}
+
+
+
+u8 USART4_RX_BUF[32];     //接收缓冲,最大32个字节.
+//接收状态
+//bit7，接收完成标志
+//bit6，接收开始标志
+//bit4~0，接收到的有效字节数目
+u8 USART4_RX_STA = 0;     //接收状态标记
+
+void UART4_IRQHandler(void)
+{
+    u8 temp;
+    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET) //接收寄存器非空
+    {
+        USART_ClearFlag (UART4, USART_IT_RXNE);         //清除中断标志
+        USART_ClearITPendingBit(UART4, USART_IT_RXNE);
+
+        temp = USART_ReceiveData(UART4);
+        if((USART4_RX_STA & 0x40) != 0) //接收已经开始
+        {
+            if((USART4_RX_STA & 0x80) == 0) //接收未完成
+            {
+                if(temp == '*')
+                    USART4_RX_STA |= 0x80;  //接收完成了
+                else //还没收到*
+                {
+                    USART4_RX_BUF[USART4_RX_STA & 0X3f] = temp;
+                    USART4_RX_STA++;                                   //已被我改动
+                    if((USART4_RX_STA & 0X3F) > 31)USART4_RX_STA = 0; //接收数据错误,重新开始接收
+                }
+            }
+        }
+        else if(temp == '#')    //接收到包头
+            USART4_RX_STA |= 0x40;
+
+        if((USART4_RX_STA & 0x80) != 0)     //接收已经完成，立即处理指令
+        {
+            //127,472   60,800
+            USART4_Judge();
+            USART4_RX_STA = 0;
+        }
+    }
+}
+
+
+void USART4_Judge(void)
+{
+    u16 HandKey = 0;
+    if(USART4_RX_BUF[0] == 'H')
+    {
+        HandKey = (u16)(USART4_RX_BUF[1] | (u16)USART4_RX_BUF[2] << 8);
+        if((HandKey & 0x0004) == 0)
+        {
+            StartFan(0);
+            OSTaskSuspend(30);
+            OSTaskSuspend(5);
+            OSTaskSuspend(10);
+        }
+        if((HandKey & 0x0002) == 0)
+        {
+            Flag[LockPointOn] = 0;
+            ErrorShow = 0;
+            USART_SendData(UART4, '7');
+            OSTaskSuspend(15);  //TASK_6_PRIO
+            OSTaskSuspend(5);       //START_TASK_PRIO
+            OSTaskSuspend(10);  //TASK_Run_PRIO
+            OSTaskSuspend(25);  //TASK_Arm_PRIO
+            OSTaskSuspend(57);
+            BREAK_All_MOTOR;
+            StartFan(0);
+            FanStopFlag = 1;
+            MotorPosition(MotorFanHight, 6200, -190000);
+            MotorStop(MotorFanCircle);
+        }
+        if((HandKey & 0x0010) == 0 && (HandKey & 0x0040) == 0)
+        {
+            Cylinder(CylinderClimbTwoMotor | CylinderClimbOneMotor,
+                     CylinderClimbTwoClose | CylinderClimbOneClose, 'W');
+        }
+        if((HandKey & 0x0020) == 0)
+				{
+            Flag[HandleSwitch] = 1;
+				}
+
+        if((HandKey & 0x1000) == 0)
+        {
+            FanStopFlag = 0;
+            StartFan(0);
+            FanStopFlag = 1;
+            MotorChangeMode(MotorFanHight,  ModeEmpty);
+            MotorChangeMode(MotorFanCircle, ModeEmpty);
+            MotorChangeMode(MotorHeartHand, ModeEmpty);
+            MotorChangeMode(MotorSetHeart,  ModeEmpty);
+            OSTaskSuspend(25);  //TASK_Arm_PRIO
+//              FREE_ALL_MOTOR;
+//              FanStopFlag = 0;
+//              OSTaskResume(25);   //TASK_Arm_PRIO
+//              MotorPosition(MotorFanHight,6200,-5000);
+        }
+        else if((HandKey & 0x2000) == 0 && (HandKey & 0x4000) == 0 &&
+                (HandKey & 0x0008) == 0)
+        {
+            USART_SendData(USART2, '8');
+        }
+//        else if((HandKey & 0x2000) == 0) //单独停止涵道风扇
+//        {
+//            FanStopFlag = 0;
+//            StartFan(0);
+//            FanStopFlag = 1;
+//        }
+				 else if((HandKey & 0x8000) == 0) 
+        {
+            GyroscopeCoefficientX = (AimX-(float)36.1)/(LockPoint.x-(float)36.1);
+		        GyroscopeCoefficientY = (AimY-(float)36.1)/(LockPoint.y-(float)36.1);
+						#if (PlacePart==BluePart)
+						Flash_Write_all(0);
+						#else
+						Flash_Write_all(4);
+						#endif
+        }
+//        else if((HandKey & 0x4000) == 0) //爬竿前单独开启涵道风扇
+//        {
+//            FanStopFlag = 0;
+//            StartFan(700);
+//        }
+        else if((HandKey & 0x8000) == 0) //爬竿后单独将左半场用的爪子立起来
+        {
+            StartStteringEngine(StteringEngineBlue, StteringEngineBlueUp);
+        }
+        else if((HandKey & 0x0020) == 0)
+        {
+            Flag[LcdPage]++;
+        }
+        else if((HandKey & 0x0080) == 0)
+        {
+            Flag[LcdPage]--;
+        }
+    }
+
+}
+
+
