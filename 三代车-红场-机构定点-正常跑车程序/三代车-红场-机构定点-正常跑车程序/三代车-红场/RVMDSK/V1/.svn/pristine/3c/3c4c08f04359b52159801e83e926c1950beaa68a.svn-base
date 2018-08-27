@@ -1,0 +1,107 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.15
+Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: feiyue wang, wangfeiyue, LIC=21EUH-WL9MD-U4VS7-EH80S-YISFD-DJ5K9
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Standard  Version: 5.15.0
+Toolchain Path:  C:\Keil\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.05 update 2 (build 169)
+Assembler:       Armasm.exe V5.05 update 2 (build 169)
+Linker/Locator:  ArmLink.exe V5.05 update 2 (build 169)
+Library Manager: ArmAr.exe V5.05 update 2 (build 169)
+Hex Converter:   FromElf.exe V5.05 update 2 (build 169)
+CPU DLL:         SARMCM3.DLL V5.15.0
+Dialog DLL:      DCM.DLL V1.13.2.0
+Target DLL:      Segger\JL2CM3.dll V2.99.15.0
+Dialog DLL:      TCM.DLL V1.14.5.0
+ 
+<h2>Project:</h2>
+F:\机器人队\Robocon2016\Robocon2016_小车\小车巡线程序\左场\左场-联调-比赛\三代车-左场-走场-测改参数-试跑\三代车-左场\RVMDSK\V1\Project\project.uvprojx
+Project File Date:  06/01/2016
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil\ARM\ARMCC\Bin'
+Build target 'Track_line'
+compiling main.c...
+compiling stm32f4xx_it.c...
+compiling led.c...
+compiling delay.c...
+compiling OV7725.c...
+compiling sccb.c...
+compiling image.c...
+image.c(384): warning:  #550-D: variable "left_edge" was set but never used
+        u8 left_edge[R] = {0};
+image.c(385): warning:  #550-D: variable "right_edge" was set but never used
+        u8 right_edge[R] = {0};
+image.c(386): warning:  #550-D: variable "edge_row3" was set but never used
+        u8 edge_row3 = 0;
+image.c(387): warning:  #550-D: variable "right_edge0" was set but never used
+        int row_white_count0 = 0,right_edge0 = 0;
+image.c(746): warning:  #550-D: variable "row_white_count" was set but never used
+        int row_white_count[R] = {0};
+image.c: 5 warnings, 0 errors
+compiling usart.c...
+..\User\src\usart.c(307): warning:  #1-D: last line of file ends without a newline
+  }
+..\User\src\usart.c: 1 warning, 0 errors
+compiling can1.c...
+..\User\src\can1.c(135): warning:  #177-D: variable "i" was declared but never referenced
+        int i = 0;
+..\User\src\can1.c: 1 warning, 0 errors
+compiling MyDataProcess.c...
+compiling pid.c...
+..\User\src\pid.c(73): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                Angle-=1.5;
+..\User\src\pid.c(77): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                Angle+=1.2;//+0.36 
+..\User\src\pid.c(94): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        stop_angle = Angle*0.3;//0.6*
+..\User\src\pid.c: 3 warnings, 0 errors
+compiling ili9320_api.c...
+compiling led_show.c...
+compiling ili9325.c...
+compiling queue.c...
+compiling visual_scope.c...
+compiling Kalman.c...
+compiling PS2.c...
+compiling misc.c...
+compiling stm32f4xx_exti.c...
+compiling stm32f4xx_gpio.c...
+compiling stm32f4xx_rcc.c...
+compiling stm32f4xx_tim.c...
+compiling stm32f4xx_usart.c...
+compiling stm32f4xx_fsmc.c...
+compiling stm32f4xx_dma.c...
+compiling stm32f4xx_dcmi.c...
+compiling stm32f4xx_can.c...
+compiling system_stm32f4xx.c...
+assembling startup_stm32f4xx.s...
+linking...
+Program Size: Code=38012 RO-data=6828 RW-data=640 ZI-data=129816  
+FromELF: creating hex file...
+".\Obj\project.axf" - 0 Error(s), 10 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.4.3.0.pack
+                ARM::CMSIS:CORE:4.1.0
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 4.1.0
+
+<h2>Collection of Component include folders:</h2>
+  F:\机器人队\Robocon2016\Robocon2016_小车\小车巡线程序\左场\左场-联调-比赛\三代车-左场-走场-测改参数-试跑\三代车-左场\RVMDSK\V1\Project\RTE
+  C:\Keil\ARM\PACK\ARM\CMSIS\4.3.0\CMSIS\Include
+  C:\Keil\ARM\PACK\Keil\STM32F4xx_DFP\1.0.5\Device\Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:4.1.0
+</pre>
+</body>
+</html>

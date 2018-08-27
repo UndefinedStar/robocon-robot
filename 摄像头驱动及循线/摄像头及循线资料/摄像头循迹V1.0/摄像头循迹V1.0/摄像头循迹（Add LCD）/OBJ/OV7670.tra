@@ -1,0 +1,39 @@
+*** Creating Trace Output File '..\OBJ\OV7670.tra' Ok.
+### Preparing for ADS-LD.
+### Creating ADS-LD Command Line
+### List of Objects: adding '"..\obj\main.o"'
+### List of Objects: adding '"..\obj\stm32f10x_it.o"'
+### List of Objects: adding '"..\obj\system_stm32f10x.o"'
+### List of Objects: adding '"..\obj\led.o"'
+### List of Objects: adding '"..\obj\exti.o"'
+### List of Objects: adding '"..\obj\ov7670.o"'
+### List of Objects: adding '"..\obj\sccb.o"'
+### List of Objects: adding '"..\obj\ili93xx.o"'
+### List of Objects: adding '"..\obj\motor.o"'
+### List of Objects: adding '"..\obj\timer.o"'
+### List of Objects: adding '"..\obj\delay.o"'
+### List of Objects: adding '"..\obj\sys.o"'
+### List of Objects: adding '"..\obj\usart.o"'
+### List of Objects: adding '"..\obj\core_cm3.o"'
+### List of Objects: adding '"..\obj\startup_stm32f10x_md.o"'
+### List of Objects: adding '"..\obj\misc.o"'
+### List of Objects: adding '"..\obj\stm32f10x_gpio.o"'
+### List of Objects: adding '"..\obj\stm32f10x_rcc.o"'
+### List of Objects: adding '"..\obj\stm32f10x_usart.o"'
+### List of Objects: adding '"..\obj\stm32f10x_exti.o"'
+### List of Objects: adding '"..\obj\stm32f10x_tim.o"'
+### ADS-LD Command completed:
+--device DARMSTM "..\obj\main.o" "..\obj\stm32f10x_it.o" "..\obj\system_stm32f10x.o" "..\obj\led.o" "..\obj\exti.o" "..\obj\ov7670.o" "..\obj\sccb.o" "..\obj\ili93xx.o" "..\obj\motor.o" "..\obj\timer.o" "..\obj\delay.o" "..\obj\sys.o" "..\obj\usart.o" "..\obj\core_cm3.o" "..\obj\startup_stm32f10x_md.o" "..\obj\misc.o" "..\obj\stm32f10x_gpio.o" "..\obj\stm32f10x_rcc.o" "..\obj\stm32f10x_usart.o" "..\obj\stm32f10x_exti.o" "..\obj\stm32f10x_tim.o" --strict --scatter "..\OBJ\OV7670.sct" 
+--autoat --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list ".\OV7670.map" -o "..\OBJ\OV7670.axf"### Preparing Environment (PrepEnvAds)
+### ADS-LD Output File: '..\OBJ\OV7670.axf'
+### ADS-LD Command File: '..\OBJ\OV7670.lnp'
+### Checking for dirty Components...
+### Creating CmdFile '..\OBJ\OV7670.lnp', Handle=0x0000027C
+### Writing '.lnp' file
+### ADS-LD Command file '..\OBJ\OV7670.lnp' is ready.
+### ADS-LD: About to start ADS-LD Thread.
+### ADS-LD: executed with 0 errors
+### Updating obj list
+### LDADS_file() completed.

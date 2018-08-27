@@ -1,0 +1,114 @@
+#include "PictureAnalyse1.h" 
+
+uint16_t Control_Value;  //控制量， 对外接口
+uint8_t VSYNCCnt = 0;    //中断计数量
+
+void PictureAnalyse(void)
+{
+	uint16_t Control_Value;  //控制量， 对外接口
+uint8_t VSYNCCnt = 0;    //中断计数量
+
+	uint8_t p=0;
+  uint16_t x,y,t1,t2,temp;   //循环量中转量  
+	uint32_t xBuf[27*27];//存放被选中的像素点当中变成黑点的坐标
+	EXTI_ClearITPendingBit(EXTI_Line4);  	
+	  p=0; //给指针复位
+	LED1(ON);
+	LED2(OFF);
+   VSYNCCnt++;
+	/*
+	1:等待OV7670同步信号，进入中断函数说明沿信号来了
+	*/
+	if(VSYNCCnt==1)    //FIFO写指针复位
+	{
+	  FIFO_WRST=1;
+		for(x=0;x<5;x++);
+		FIFO_WRST=0;
+ 		for(x=0;x<100;x++);
+		FIFO_WRST=1;      	//写指针复位
+		FIFO_WR=1;	  //写使能，写指针复位只会就可以开始写了	   
+	}
+
+	/*
+	2&3:FIFO写指针复位，按照手册上的时序，复位完成
+	*/
+	
+	/*
+	4:进入下面这个函数说明第二次接收到了沿信号
+	*/
+	if(VSYNCCnt==2)
+	{
+	 	FIFO_WR=0;     //禁止CMOS数据写入FIFO
+	/*
+	5:禁止FIFO写，换做读数据，读写使能转换，一帧数据储存完毕
+	*/
+/////////////////////读取数据完毕///////////////////////////////////
+
+		EXTI->IMR&=~(1<<4);	 //静止外部中断
+		EXTI->EMR&=~(1<<4);
+	   
+			FIFO_RRST =0;				//读指针复位										
+			for(x=0;x<10;x++)		
+			{
+				FIFO_RCK =0;				//至少需要一个时钟周期的跳变才能复位
+				FIFO_RCK =1;
+			}
+			FIFO_RRST =1;
+      /*
+		1：FIFO读指针复位操作完成，参照读指针复位时序
+	  */
+
+		write_cmd_data(0x0003,0x1018);
+		write_cmd_data(0x0050,0x0000); 
+		write_cmd_data(0x0051,0x00ef);
+		write_cmd_data(0x0052,0x0000);
+		write_cmd_data(0x0053,0x013f);
+		write_cmd_data(0x0020,0x0000);
+		write_cmd_data(0x0021,0x013f);   
+		//设置TFT显示模式，为动态显示
+			
+		LCD_WriteRAM_Prepare();
+		FIFO_OE=0;			  //允许FIFO输出，打开输出时能
+			
+
+		for(x = 1; x <= Windows_X; x ++)	 
+		 {	
+			 	LED1(OFF);
+				LED2(ON);			
+		 	for(y = 1; y <= Windows_Y; y ++)
+			{			
+			
+
+				FIFO_RCK=0;					
+				FIFO_RCK=1;				//模拟读时钟，读取高八位字节
+				
+				//读取T1的时间段  高八位
+        
+				FIFO_RCK=0;						
+				FIFO_RCK=1;	//模拟读时钟，读取第八位
+				
+				
+			  if(0x0004&GPIOD->IDR&&x%6==0&&y%8==0)
+				{
+						t1=0xff;
+					  xBuf[p]=x;
+					  Control_Value+=xBuf[p];
+					  p++;
+				}
+				else
+						t1=0x00;
+			  temp=(t1<<8)|t2;		
+				write_data_u16(temp);//整合数据+显示在TFT上	
+			}
+		}
+		/*
+		2&3&4 : 读取一侦数据结束
+		*/	
+		Control_Value=Control_Value/100;	//数值太大减少一些
+		FIFO_OE=1;		 	  //禁止FIFO输出
+		VSYNCCnt = 0;	      //清楚数量标志
+		EXTI->IMR|=(1<<4);	  //允许外部中断，以便接收下帧图像数据
+		EXTI->EMR|=(1<<4);
+
+   }
+ }

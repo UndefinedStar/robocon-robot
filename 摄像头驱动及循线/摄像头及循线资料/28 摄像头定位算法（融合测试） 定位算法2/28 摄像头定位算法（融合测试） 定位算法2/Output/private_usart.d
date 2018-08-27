@@ -1,0 +1,16 @@
+.\output\private_usart.o: USER\private_usart.c
+.\output\private_usart.o: D:\Tool\ARM\Inc\ST\STM32F10x\stm32f10x.h
+.\output\private_usart.o: D:\Tool\ARM\CMSIS\Include\core_cm3.h
+.\output\private_usart.o: D:\Tool\ARM\ARMCC\bin\..\include\stdint.h
+.\output\private_usart.o: D:\Tool\ARM\CMSIS\Include\core_cmInstr.h
+.\output\private_usart.o: D:\Tool\ARM\CMSIS\Include\core_cmFunc.h
+.\output\private_usart.o: D:\Tool\ARM\Inc\ST\STM32F10x\system_stm32f10x.h
+.\output\private_usart.o: .\USER\stm32f10x_conf.h
+.\output\private_usart.o: .\FWlib\inc\stm32f10x_exti.h
+.\output\private_usart.o: D:\Tool\ARM\Inc\ST\STM32F10x\stm32f10x.h
+.\output\private_usart.o: .\FWlib\inc\stm32f10x_gpio.h
+.\output\private_usart.o: .\FWlib\inc\stm32f10x_rcc.h
+.\output\private_usart.o: .\FWlib\inc\stm32f10x_tim.h
+.\output\private_usart.o: .\FWlib\inc\stm32f10x_usart.h
+.\output\private_usart.o: .\FWlib\inc\misc.h
+.\output\private_usart.o: USER\private_usart.h
